@@ -24,10 +24,10 @@ public class Bomb : Hexagon
     public void DecreaseCounter()
     {
         counter--;
+        SetText();
         if(counter <= 0)
             UIManager.Instance.OpenEndCanvas();
-        else
-            SetText();
+            
     }
 
     public void Subcribe()

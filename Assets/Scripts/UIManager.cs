@@ -34,6 +34,7 @@ public class UIManager : MonoBehaviour
     {
         GameManager.Instance.gameState = GameState.END;
         scoreManager.Disable();
+        endCanvas.SetValues(scoreManager.Score, scoreManager.MoveCount, scoreManager.ExplodedHexagon, scoreManager.ExplodedBomb);
         endCanvas.Open();
     }
 }

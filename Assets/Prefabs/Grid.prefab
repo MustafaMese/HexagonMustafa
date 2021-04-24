@@ -46,6 +46,8 @@ MonoBehaviour:
   matrix: {x: 8, y: 9}
   hexPrefab: {fileID: 4823196609860424053, guid: 57aca3e8a0226bb448fd5bf331357bd9,
     type: 3}
+  bombPrefab: {fileID: 8566346436366882846, guid: eb157f62539d24a4a819e8c87f613183,
+    type: 3}
   colors:
   - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   - {r: 0, g: 1, b: 1, a: 1}

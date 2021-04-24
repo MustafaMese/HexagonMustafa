@@ -248,19 +248,23 @@ public class Hexagon : MonoBehaviour
         {
             Bomb bomb = (Bomb)this;
             bomb.Unsubscribe();
+            ScoreManager.Instance.IncreaseExplodedBombCount();
         }
         if (targetHexagon.hexType == HexType.BOMB)
         {
             Bomb bomb = (Bomb)targetHexagon;
             bomb.Unsubscribe();
+            ScoreManager.Instance.IncreaseExplodedBombCount();
         }
         if (targetHexagon1.hexType == HexType.BOMB)
         {
             Bomb bomb = (Bomb)targetHexagon1;
             bomb.Unsubscribe();
+            ScoreManager.Instance.IncreaseExplodedBombCount();
         }
 
         ScoreManager.Instance.IncreaseScore(15);
+        ScoreManager.Instance.IncreaseExplodedHexCount();
 
         hexGrid.DeleteHexagon(transform.position);
         hexGrid.DeleteHexagon(targetHexagon.transform.position);

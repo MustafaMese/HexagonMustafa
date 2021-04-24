@@ -21,37 +21,19 @@ public class HexGrid : MonoBehaviour
 
     public Stack<Hexagon> chosenHexes = new Stack<Hexagon>();
     public Stack<HexCoordinate> emptyGrids = new Stack<HexCoordinate>();
-
-    private bool bombCreated;
+    private bool startPhase;
 
     private void Start() 
     {
         sliding = new ProcessHandler();
         InitializeGrids();
-        
-    }
+        ExplodeAll();
 
-    private IEnumerator MakeReady()
-    {
-        yield return new WaitForSeconds(0.2f);
-        bool readyToStart = false;
-        while (!readyToStart)
-        {
-            readyToStart = ExplodeAll();
-            yield return new WaitForEndOfFrame();
-        }
-
-        GameManager.Instance.gameState = GameState.READY;
+        startPhase = true;
     }
 
     private void Update() 
     {
-        // if(GameManager.Instance.gameState == GameState.START) 
-        // {
-        //     StartCoroutine(MakeReady());
-        //     return;
-        // }
-
         if (GameManager.Instance.gameState == GameState.READY && (InputManager.Instance.entry == Entry.SWIPE_LEFT || InputManager.Instance.entry == Entry.SWIPE_RIGHT))
             StartRotation(InputManager.Instance.entry);
 
@@ -80,7 +62,11 @@ public class HexGrid : MonoBehaviour
                 }
                 else
                 {
-                    bombCreated = false;
+                    if(startPhase)
+                    {
+                        startPhase = false;
+                        ScoreManager.Instance.Enable();
+                    }
                     isSliding = false;
                     sliding.Reset();
                     DisableIdentifiers();
@@ -98,13 +84,33 @@ public class HexGrid : MonoBehaviour
             bool explosion = hex.TryExplode();
             if (explosion)
             {
-                sliding.Start();
+                StartSliding();
                 return false;
             }
         }
         return true;
     }
 
+    public void Notify()
+    {
+        List<Hexagon> hexes = new List<Hexagon>(chosenHexes);
+        for (var i = 0; i < hexes.Count; i++)
+        {
+            bool explosion = hexes[i].TryExplode();
+            if(explosion)
+            {
+                ScoreManager.Instance.SetBombs();
+                ScoreManager.Instance.IncreaseMoveCount();
+
+                StartSliding();
+                return;
+            }
+        }
+
+        Rotate();
+    }
+
+    #region SLIDING METHODS
     private void Slide()
     {
         var hexCoordinate = emptyGrids.Pop();
@@ -144,25 +150,9 @@ public class HexGrid : MonoBehaviour
         sliding.start = true;
         GameManager.Instance.gameState = GameState.STOP;
     }
+    #endregion
 
-    // TODO Chosenhexesi list yap.
-
-    public void Notify()
-    {
-        List<Hexagon> hexes = new List<Hexagon>(chosenHexes);
-        for (var i = 0; i < hexes.Count; i++)
-        {
-            bool explosion = hexes[i].TryExplode();
-            if(explosion)
-            {
-                ScoreManager.Instance.SetBombs();
-                StartSliding();
-                return;
-            }
-        }
-
-        Rotate();
-    }
+    #region ROTATE METHODS
 
     private void StartRotation(Entry entry)
     {
@@ -190,8 +180,6 @@ public class HexGrid : MonoBehaviour
         rotateCount = 3;
         GameManager.Instance.gameState = GameState.READY;
     }
-
-    #region ROTATE METHODS
 
     private void ChangePositions(Entry entry, List<Hexagon> hexes)
     {
@@ -318,13 +306,13 @@ public class HexGrid : MonoBehaviour
 
     private Hexagon CreateHexagon(HexCoordinate hexCoordinate)
     {
-        if(ScoreManager.Instance.Score != 0 && ScoreManager.Instance.Score % 1000 == 0 && !bombCreated)
+        if(ScoreManager.Instance.createBomb)
         {
+            ScoreManager.Instance.createBomb = false;
             Bomb bomb = Instantiate(bombPrefab, transform);
             bomb.Subcribe();
             int number = UnityEngine.Random.Range(0, colors.Length);
             bomb.Initialize(number, hexCoordinate, colors[number], this);
-            bombCreated = true;
             return bomb;
         }
         else
